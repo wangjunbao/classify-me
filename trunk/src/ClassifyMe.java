@@ -34,6 +34,9 @@ public class ClassifyMe {
 		computers.subcategories = new Vector<Category>();
 		computers.subcategories.add(hardware);
 		computers.subcategories.add(programming);
+		hardware.parent = computers;
+		programming.parent = computers;
+		computers.parent = root;
 		root.subcategories.add(computers);
 		
 		Category fitness = new Category();
@@ -47,6 +50,9 @@ public class ClassifyMe {
 		health.subcategories = new Vector<Category>();
 		health.subcategories.add(fitness);
 		health.subcategories.add(diseases);
+		fitness.parent = health;
+		diseases.parent = health;
+		health.parent = root;
 		root.subcategories.add(health);
 		
 		Category basketball = new Category();
@@ -60,11 +66,24 @@ public class ClassifyMe {
 		sports.subcategories = new Vector<Category>();
 		sports.subcategories.add(basketball);
 		sports.subcategories.add(soccer);
+		basketball.parent = sports;
+		soccer.parent = sports;
+		sports.parent = root;
 		root.subcategories.add(sports);
 		
 		classification = new Vector<Category>();
 		
 //		root.printTree();
+	}
+	
+	private void printCategoryPath(Category c) {
+		if (c.parent != null) {
+			printCategoryPath(c.parent);
+			System.out.print('/');
+			System.out.print(c.name);
+		} else {
+			System.out.print(c.name);
+		}
 	}
 	
 	private Vector<Category> classify(Category c) {
@@ -96,7 +115,7 @@ public class ClassifyMe {
 					}
 					subcatName = line.substring(0 , index);
 					probingQuery = line.substring(index+1);
-					System.out.println("name:" + subcatName + " query:" + probingQuery);
+//					System.out.println("name:" + subcatName + " query:" + probingQuery);
 					count = probe(probingQuery);
 //					System.out.println(count);
 					c.coverage += count;
@@ -120,7 +139,6 @@ public class ClassifyMe {
 				if (catList.size() == 0) {
 					catList.add(c);
 				} else {
-					catList.addAll(catList);
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -184,7 +202,9 @@ public class ClassifyMe {
 		cm.coverage = Integer.parseInt(args[2]);
 		cm.classification = cm.classify(cm.root);
 		for (int k=0; k < cm.classification.size(); k++) {
-			System.out.println(cm.classification.elementAt(k).name);
+//			System.out.println(cm.classification.elementAt(k).name);
+			cm.printCategoryPath(cm.classification.elementAt(k));
+			System.out.println();
 		}
 //		System.out.println(cm.probe("heart cancer"));
 	}

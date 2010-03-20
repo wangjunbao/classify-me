@@ -5,11 +5,13 @@ public class Category {
 	public String  name;
 	public double specificity;
 	public int coverage;
+	public Category parent;
 	public Vector<Category> subcategories;
 	public Category() {
 		name = "";
 		specificity = 0;
 		coverage = 0;
+		parent = null;
 //		subcategories = new Vector<Category>();
 	}
 	
