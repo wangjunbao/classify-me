@@ -1,5 +1,6 @@
 package classify;
 
+import java.util.Hashtable;
 import java.util.Vector;
 
 public class Category {
@@ -8,6 +9,8 @@ public class Category {
 	public int coverage;
 	public Category parent;
 	public Vector<Category> subcategories;
+	public Vector<String> queries = new Vector<String>();
+	public Hashtable<String,Integer> samples = new Hashtable<String,Integer>();
 
 	public Category() {
 		name = "";
