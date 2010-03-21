@@ -2,6 +2,8 @@ package classify;
 
 import java.io.*;
 import java.net.*;
+import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Vector;
 import java.util.Scanner;
 import javax.xml.parsers.*;
@@ -11,12 +13,15 @@ import org.xml.sax.*;
 
 public class ClassifyMe {
 
-	private static String appId = "Iu5udbvV34Fcg3uDwfJMTEY8Lb09.yMmFTaf7axWid3g4LmEN3G3iBUs6pa6jrRE";
-	private String databaseURL;
-	private double specificity;
-	private int coverage;
-	private Vector<Category> classification;
-	private Category root;
+	protected static String appId = "Iu5udbvV34Fcg3uDwfJMTEY8Lb09.yMmFTaf7axWid3g4LmEN3G3iBUs6pa6jrRE";
+	protected String databaseURL;
+	protected double specificity;
+	protected int coverage;
+	protected Vector<Category> classification;
+	protected Category root;
+	private int count;
+	private int sampleSize = 4;
+	private Hashtable<String, Integer> samples = new Hashtable<String, Integer>();
 
 	public ClassifyMe() {
 
@@ -78,13 +83,18 @@ public class ClassifyMe {
 		root.printTree();
 	}
 
-	private void printCategoryPath(Category c) {
+	protected void printCategoryPath(Category c) {
 		if (c.parent != null) {
 			printCategoryPath(c.parent);
 			System.out.print('/');
-			System.out.print(c.name);
-		} else {
-			System.out.print(c.name);
+
+		}
+		System.out.print(c.name);
+		Iterator<String> iterator = c.samples.keySet().iterator();
+		String tempUrl;
+		while (iterator.hasNext()) {
+			tempUrl = (String) (iterator.next());
+			samples.put(tempUrl, 1);
 		}
 	}
 
@@ -106,7 +116,7 @@ public class ClassifyMe {
 					categoryName.toLowerCase() + ".txt"));
 			String line = null;
 			try {
-				int index, count;
+				int index;
 				String subcatName;
 				String probingQuery;
 				while ((line = input.readLine()) != null) {
@@ -118,9 +128,10 @@ public class ClassifyMe {
 					}
 					subcatName = line.substring(0, index);
 					probingQuery = line.substring(index + 1);
+					c.queries.addElement(probingQuery);
 					// System.out.println("name:" + subcatName + " query:" +
 					// probingQuery);
-					count = probe(probingQuery);
+					c = probe(probingQuery, c);
 					// System.out.println(count);
 					c.coverage += count;
 					for (int j = 0; j < c.subcategories.size(); j++) {
@@ -133,7 +144,8 @@ public class ClassifyMe {
 				}
 				System.out.println(categoryName + " coverage:" + c.coverage);
 
-				//iterate category tree to find class for database by recursive calling classify()
+				// iterate category tree to find class for database by recursive
+				// calling classify()
 				for (int j = 0; j < c.subcategories.size(); j++) {
 					System.out.println(c.subcategories.elementAt(j).name
 							+ " coverage:"
@@ -152,7 +164,6 @@ public class ClassifyMe {
 				}
 				if (catList.size() == 0) {
 					catList.add(c);
-				} else {
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -165,7 +176,7 @@ public class ClassifyMe {
 		return catList;
 	}
 
-	public int probe(String query) {
+	private Category probe(String query, Category c) {
 		// replace all spaces with "%20" to get url friendly query
 		String urlQuery = query.replaceAll(" ", "%20");
 		URL url;
@@ -173,6 +184,7 @@ public class ClassifyMe {
 			url = new URL("http://boss.yahooapis.com/ysearch/web/v1/'"
 					+ urlQuery + "'?appid=" + appId + "&format=xml&sites="
 					+ databaseURL);
+			System.out.println(url);
 			URLConnection con = url.openConnection();
 			InputStream inStream = con.getInputStream();
 			Scanner in = new Scanner(inStream);
@@ -181,31 +193,48 @@ public class ClassifyMe {
 				temp.append(in.nextLine());
 			}
 			String res = temp.toString();
-			DocumentBuilderFactory factory = DocumentBuilderFactory
-					.newInstance();
-			DocumentBuilder builder;
-			builder = factory.newDocumentBuilder();
-			Document doc = builder
-					.parse(new InputSource(new StringReader(res)));
-			NodeList nodeL = doc.getElementsByTagName("resultset_web");
-			Node node = nodeL.item(0);
-			NamedNodeMap nodeMap = node.getAttributes();
-			node = nodeMap.getNamedItem("totalhits");
-			return Integer.parseInt(node.getTextContent());
+			return parseSearchResult(res, c);
+
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		return c;
+	}
+
+	private Category parseSearchResult(String response, Category c) {
+		SearchResult sr;
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder builder;
+		try {
+			builder = factory.newDocumentBuilder();
+			Document doc = builder.parse(new InputSource(new StringReader(
+					response)));
+			NodeList nodeL = doc.getElementsByTagName("resultset_web");
+			Node node = nodeL.item(0);
+			NamedNodeMap nodeMap = node.getAttributes();
+			node = nodeMap.getNamedItem("totalhits");
+			count = Integer.parseInt(node.getTextContent());
+			nodeL = doc.getElementsByTagName("result");
+			for (int i = 0; i < sampleSize; i++) {
+				node = nodeL.item(i);
+				sr = new SearchResult(node);
+				c.samples.put(sr.url, 1);
+			}
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		return 0;
+		return c;
 	}
 
 	public static void main(String args[]) {
@@ -222,7 +251,6 @@ public class ClassifyMe {
 		for (int k = 0; k < cm.classification.size(); k++) {
 			// System.out.println(cm.classification.elementAt(k).name);
 			cm.printCategoryPath(cm.classification.elementAt(k));
-			System.out.println();
 		}
 		// System.out.println(cm.probe("heart cancer"));
 	}
