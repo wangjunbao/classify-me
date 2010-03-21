@@ -74,7 +74,7 @@ public class ClassifyMe {
 		
 		classification = new Vector<Category>();
 		
-//		root.printTree();
+		root.printTree();
 	}
 	
 	private void printCategoryPath(Category c) {

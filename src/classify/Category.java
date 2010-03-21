@@ -1,5 +1,4 @@
 package classify;
-import java.io.*;
 import java.util.Vector;
 
 public class Category {
