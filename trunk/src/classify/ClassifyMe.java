@@ -26,6 +26,9 @@ public class ClassifyMe {
 	private Hashtable<String, Integer> samples = new Hashtable<String, Integer>();
 	private String categoryPath = "";
 
+	/**
+	 * Initialize the category tree from file
+	 */
 	public ClassifyMe() {
 
 		root = new Category();
@@ -90,6 +93,13 @@ public class ClassifyMe {
 		return categoryPath;
 	}
 
+	/**
+	 * Print out the Category path the database belongs to and make summary
+	 * based on its classification
+	 * 
+	 * @param c
+	 *            the Child class node that database belongs to
+	 */
 	protected void printCategoryPath(Category c) {
 		if (c.parent != null) {
 			printCategoryPath(c.parent);
@@ -159,6 +169,13 @@ public class ClassifyMe {
 		}
 	}
 
+	/**
+	 * Classify database from category node c
+	 * 
+	 * @param c
+	 *            Category to start with for classification
+	 * @return Return the child node category that database belong to
+	 */
 	private Vector<Category> classify(Category c) {
 		Vector<Category> catList = new Vector<Category>();
 		try {
@@ -237,6 +254,15 @@ public class ClassifyMe {
 		return catList;
 	}
 
+	/**
+	 * Implement QProbe algorithm
+	 * 
+	 * @param query
+	 *            The query for Prober
+	 * @param c
+	 *            The current node for Prober query
+	 * @return Return updated category node (Update samples)
+	 */
 	private Category probe(String query, Category c) {
 		// replace all spaces with "%20" to get url friendly query
 		String urlQuery = query.replaceAll(" ", "%20");
@@ -266,6 +292,16 @@ public class ClassifyMe {
 		return c;
 	}
 
+	/**
+	 * Anaylze the XML for search result returned from Yahoo! to find out result
+	 * items and total hits
+	 * 
+	 * @param response
+	 *            Response string (XML)
+	 * @param c
+	 *            Category node for such search
+	 * @return Return updated category (update samples and global varible count)
+	 */
 	private Category parseSearchResult(String response, Category c) {
 		SearchResult sr;
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
