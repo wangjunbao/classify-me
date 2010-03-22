@@ -318,9 +318,12 @@ public class ClassifyMe {
 			nodeL = doc.getElementsByTagName("result");
 			for (int i = 0; i < sampleSize; i++) {
 				node = nodeL.item(i);
-				sr = new SearchResult(node);
-				if (!c.samples.containsKey(sr.url))
-					c.samples.put(sr.url, 1);
+				if(node!=null){
+					sr = new SearchResult(node);
+					if (!c.samples.containsKey(sr.url))
+						c.samples.put(sr.url, 1);
+			
+				}
 			}
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
