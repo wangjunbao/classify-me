@@ -2,8 +2,10 @@ package classify;
 
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.Vector;
 import java.util.Scanner;
 import javax.xml.parsers.*;
@@ -13,15 +15,16 @@ import org.xml.sax.*;
 
 public class ClassifyMe {
 
-	protected static String appId = "Iu5udbvV34Fcg3uDwfJMTEY8Lb09.yMmFTaf7axWid3g4LmEN3G3iBUs6pa6jrRE";
-	protected String databaseURL;
-	protected double specificity;
-	protected int coverage;
-	protected Vector<Category> classification;
-	protected Category root;
+	private static String appId = "Iu5udbvV34Fcg3uDwfJMTEY8Lb09.yMmFTaf7axWid3g4LmEN3G3iBUs6pa6jrRE";
+	private String databaseURL;
+	private double specificity;
+	private int coverage;
+	private Vector<Category> classification;
+	private Category root;
 	private int count;
 	private int sampleSize = 4;
 	private Hashtable<String, Integer> samples = new Hashtable<String, Integer>();
+	private String categoryPath = "";
 
 	public ClassifyMe() {
 
@@ -83,18 +86,76 @@ public class ClassifyMe {
 		root.printTree();
 	}
 
+	public String getClassificationPath() {
+		return categoryPath;
+	}
+
 	protected void printCategoryPath(Category c) {
 		if (c.parent != null) {
 			printCategoryPath(c.parent);
-			System.out.print('/');
+			categoryPath = categoryPath + '/';
 
 		}
-		System.out.print(c.name);
-		Iterator<String> iterator = c.samples.keySet().iterator();
+		categoryPath = categoryPath + c.name;
+		Iterator<String> innerIterator;
+		Hashtable<String, Integer> sum = new Hashtable<String, Integer>();
+		String tempWord;
+		Set<String> tempWords;
+		Integer innerTempValue;
 		String tempUrl;
+		ArrayList<String> keys = new ArrayList<String>();
+		Iterator<String> iterator = c.samples.keySet().iterator();
 		while (iterator.hasNext()) {
 			tempUrl = (String) (iterator.next());
-			samples.put(tempUrl, 1);
+			// make sure no duplicated url from different queries
+			if (!samples.containsKey(tempUrl)) {
+				samples.put(tempUrl, 1);
+				System.out.println("Crawling : " + tempUrl);
+				tempWords = GetWordsLynx.runLynx(tempUrl);
+				innerIterator = tempWords.iterator();
+				// Calculate document frequency for each word
+				while (innerIterator.hasNext()) {
+					tempWord = innerIterator.next();
+					if (sum.containsKey(tempWord)) {
+						innerTempValue = (Integer) sum.get(tempWord);
+						innerTempValue = innerTempValue + 1;
+						sum.put(tempWord, innerTempValue);
+					} else {
+						sum.put(tempWord, 1);
+						keys.add(tempWord);
+						System.out.println(tempWord);
+					}
+				}
+			}
+		}
+		FileOutputStream output;
+		try {
+			output = new FileOutputStream(c.name + "-" + databaseURL + ".txt");
+			PrintStream file = new PrintStream(output);
+			System.out.println("keys size : " + keys.size());
+			// Sort words to alphabetical order
+			for (int i = 0; i < keys.size(); i++) {
+				for (int j = 0; j < keys.size() - i - 1; j++) {
+					if ((keys.get(j).compareTo(keys.get(j + 1))) < 0) {
+						tempWord = keys.get(j);
+						keys.remove(j);
+						keys.add(j + 1, tempWord);
+					}
+				}
+				System.out.println("Writing to file " + c.name + "-"
+						+ databaseURL + ".txt : "
+						+ keys.get(keys.size() - i - 1) + " : "
+						+ sum.get(keys.get(keys.size() - i - 1)));
+				file.println(keys.get(keys.size() - i - 1) + " : "
+						+ sum.get(keys.get(keys.size() - i - 1)));
+			}
+			output.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
@@ -222,7 +283,8 @@ public class ClassifyMe {
 			for (int i = 0; i < sampleSize; i++) {
 				node = nodeL.item(i);
 				sr = new SearchResult(node);
-				c.samples.put(sr.url, 1);
+				if (!c.samples.containsKey(sr.url))
+					c.samples.put(sr.url, 1);
 			}
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
@@ -252,6 +314,11 @@ public class ClassifyMe {
 			// System.out.println(cm.classification.elementAt(k).name);
 			cm.printCategoryPath(cm.classification.elementAt(k));
 		}
-		// System.out.println(cm.probe("heart cancer"));
+		System.out.println("Classification: " + cm.getClassificationPath());
+		String summary = "";
+		summary = cm.getClassificationPath().replace("/",
+				"-" + cm.databaseURL + ".txt and ");
+		summary = summary + "-" + cm.databaseURL + ".txt";
+		System.out.println("Write summary to file: " + summary);
 	}
 }
