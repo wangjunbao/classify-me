@@ -231,6 +231,7 @@ public class ClassifyMe {
 					}
 
 				}
+				input.close();
 				System.out.println(categoryName + " coverage:" + c.coverage);
 
 				// iterate category tree to find class for database by recursive
@@ -291,7 +292,7 @@ public class ClassifyMe {
 				temp.append(in.nextLine());
 			}
 			String res = temp.toString();
-			return parseSearchResult(res, c);
+			return parseSearchResult(res, c, query);
 
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
@@ -313,7 +314,7 @@ public class ClassifyMe {
 	 *            Category node for such search
 	 * @return Return updated category (update samples and global varible count)
 	 */
-	private Category parseSearchResult(String response, Category c) {
+	private Category parseSearchResult(String response, Category c, String query) {
 		SearchResult sr;
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder;
@@ -327,19 +328,29 @@ public class ClassifyMe {
 			node = nodeMap.getNamedItem("totalhits");
 			count = Integer.parseInt(node.getTextContent());
 			
-/*
+
 			// write down the number of matches found for this query
 			File f = new File(databaseURL + '/' + query + ".txt");
 			if (f.exists()) {
-				System.out.println("Query probe file already exists. We delete it.");
-				f.delete();
+				System.out.println("Query probe file already exists. Checking if the count is the same...");
+				BufferedReader input = new BufferedReader(new FileReader(databaseURL + '/' + query + ".txt"));
+				String line;
+				if ((line = input.readLine()) != null && line == Integer.toString(count)) {
+					
+				} else {
+					System.err.println("Problem verifing query hit count.");
+				}
+				input.close();
+			} else {
+				FileOutputStream output;
+				f = new File(databaseURL);
+				if (!f.exists()) f.mkdir();
+				output = new FileOutputStream(databaseURL + '/' + query + ".txt");
+				PrintStream file = new PrintStream(output);
+				file.println(count);
+				output.close();
 			}
-			FileOutputStream output;
-			output = new FileOutputStream(databaseURL + '/' + query + ".txt");
-			PrintStream file = new PrintStream(output);
-			file.println(count);
-			output.close();
-*/			
+			
 			nodeL = doc.getElementsByTagName("result");
 			for (int i = 0; i < sampleSize; i++) {
 				node = nodeL.item(i);
