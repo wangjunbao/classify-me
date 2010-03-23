@@ -93,6 +93,28 @@ public class ClassifyMe {
 		return categoryPath;
 	}
 
+	private ArrayList<String> addElementToList(ArrayList<String> array,
+			int start, int end, String element) {
+		if (start == end) {
+			if (end == 0)
+				array.add(element);
+			else {
+				array.add(start, element);
+			}
+
+		} else {
+			String temp = array.get(array.size() / 2);
+			if (element.compareTo(temp) < 0)
+				array = addElementToList(array, start, array.size() / 2,
+						element);
+			else
+				array = addElementToList(array, array.size() / 2 , array
+						.size() - 1, element);
+		}
+		return array;
+
+	}
+
 	/**
 	 * Print out the Category path the database belongs to and make summary
 	 * based on its classification
@@ -132,7 +154,8 @@ public class ClassifyMe {
 						sum.put(tempWord, innerTempValue);
 					} else {
 						sum.put(tempWord, 1);
-						keys.add(tempWord);
+						keys = addElementToList(keys, 0, keys.size(),
+								tempWord);
 						System.out.println(tempWord);
 					}
 				}
@@ -318,11 +341,11 @@ public class ClassifyMe {
 			nodeL = doc.getElementsByTagName("result");
 			for (int i = 0; i < sampleSize; i++) {
 				node = nodeL.item(i);
-				if(node!=null){
+				if (node != null) {
 					sr = new SearchResult(node);
 					if (!c.samples.containsKey(sr.url))
 						c.samples.put(sr.url, 1);
-			
+
 				}
 			}
 		} catch (ParserConfigurationException e) {
