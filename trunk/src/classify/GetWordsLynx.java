@@ -5,7 +5,6 @@ import java.io.InputStreamReader;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.TreeSet;
 
 public class GetWordsLynx {
 
@@ -75,7 +74,6 @@ public class GetWordsLynx {
 				}
 			}
 		}
-		Set<String> document = new TreeSet<String>();
 		StringTokenizer st = new StringTokenizer(output.toString());
 		Hashtable<String, Integer> hash = new Hashtable<String, Integer>();
 		while (st.hasMoreTokens()) {
@@ -83,7 +81,6 @@ public class GetWordsLynx {
 
 			if (!hash.containsKey(tok)) {
 				hash.put(tok, 1);
-				document.add(tok);
 			}
 		}
 		// Iterator<String> iterator = hash.keySet().iterator();
@@ -94,7 +91,7 @@ public class GetWordsLynx {
 		// termCount = hash.get(term);
 		// System.out.println(term);
 		// }
-		return document;
+		return hash.keySet();
 	}
 
 	public static void main(String args[]) {
