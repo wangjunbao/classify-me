@@ -335,10 +335,13 @@ public class ClassifyMe {
 				System.out.println("Query probe file already exists. Checking if the count is the same...");
 				BufferedReader input = new BufferedReader(new FileReader(databaseURL + '/' + query + ".txt"));
 				String line;
-				if ((line = input.readLine()) != null && line == Integer.toString(count)) {
+				if ((line = input.readLine()) != null && Integer.parseInt(line) == count) {
 					
 				} else {
 					System.err.println("Problem verifing query hit count.");
+					System.err.println("query: " + query);
+					System.err.println("old count:" + line + " new count:" + count);
+					System.exit(1);
 				}
 				input.close();
 			} else {
