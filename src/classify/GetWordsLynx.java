@@ -15,7 +15,7 @@ public class GetWordsLynx {
 
 		try {
 
-			String cmdline[] = { "/usr/bin/lynx", "--dump", url };
+			String cmdline[] = { "/usr/local/bin/lynx", "--dump", url };
 			Process p = Runtime.getRuntime().exec(cmdline);
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(
 					p.getInputStream()));
@@ -74,6 +74,7 @@ public class GetWordsLynx {
 				}
 			}
 		}
+		// Set<String> document = new TreeSet<String>();
 		StringTokenizer st = new StringTokenizer(output.toString());
 		Hashtable<String, Integer> hash = new Hashtable<String, Integer>();
 		while (st.hasMoreTokens()) {
@@ -81,6 +82,7 @@ public class GetWordsLynx {
 
 			if (!hash.containsKey(tok)) {
 				hash.put(tok, 1);
+				// document.add(tok);
 			}
 		}
 		// Iterator<String> iterator = hash.keySet().iterator();
