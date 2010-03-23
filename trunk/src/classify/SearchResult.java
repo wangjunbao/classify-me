@@ -36,7 +36,7 @@ public class SearchResult {
 	SearchResult(Node node) {
 		Node tempInnerNode;
 		NodeList tempList = node.getChildNodes();
-		System.out.println("------------------------------------------");
+//		System.out.println("------------------------------------------");
 		for (int j = 0; j < tempList.getLength(); j++) {
 			tempInnerNode = tempList.item(j);
 			if (!tempInnerNode.getNodeName().equalsIgnoreCase("#text")) {
@@ -59,8 +59,8 @@ public class SearchResult {
 				} else if (tempInnerNode.getNodeName().equalsIgnoreCase("date")) {
 					this.date = textParse(tempInnerNode.getTextContent());
 				}
-				System.out.println(tempInnerNode.getNodeName() + ":"
-						+ textParse(tempInnerNode.getTextContent()));
+//				System.out.println(tempInnerNode.getNodeName() + ":"
+//						+ textParse(tempInnerNode.getTextContent()));
 			}
 		}
 	}
