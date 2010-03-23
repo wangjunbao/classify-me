@@ -20,11 +20,11 @@ public class ClassifyMe {
 	private double specificity;
 	private int coverage;
 	private Vector<Category> classification;
+	private Vector<String> categoryPaths;
 	private Category root;
 	private int count;
 	private int sampleSize = 4;
 	private Hashtable<String, Integer> samples = new Hashtable<String, Integer>();
-	private String categoryPath = "";
 
 	/**
 	 * Initialize the category tree from file
@@ -85,28 +85,35 @@ public class ClassifyMe {
 		root.subcategories.add(sports);
 
 		classification = new Vector<Category>();
+		categoryPaths = new Vector<String>();
 
 		root.printTree();
 	}
 
-	protected String getClassificationPath() {
-		return categoryPath;
+	protected String getClassificationPaths() {
+		String res = "";
+		for(int i = 0; i < categoryPaths.size(); i++) {
+			res = res + categoryPaths.get(i) + ", ";
+		}
+		if (res.length() >= 2)
+			res = res.substring(0, res.length()-2);
+		return res;
 	}
 
 	/**
-	 * Print out the Category path the database belongs to and make summary
+	 * Get the i^th Category path the database belongs to and make summary
 	 * based on its classification
 	 * 
 	 * @param c
 	 *            the Child class node that database belongs to
 	 */
-	protected void printCategoryPath(Category c) {
+	protected void getCategoryPath(Category c, int i) {
 		if (c.parent != null) {
-			printCategoryPath(c.parent);
-			categoryPath = categoryPath + '/';
-
+			getCategoryPath(c.parent, i);
+			categoryPaths.set(i, categoryPaths.get(i) + '/');
 		}
-		categoryPath = categoryPath + c.name;
+		categoryPaths.set(i, categoryPaths.get(i) + c.name);
+//		categoryPath = categoryPath + c.name;
 		Iterator<String> innerIterator;
 		Hashtable<String, Integer> sum = new Hashtable<String, Integer>();
 		String tempWord;
@@ -152,6 +159,7 @@ public class ClassifyMe {
 			iterator = keys.iterator();
 			while (iterator.hasNext()) {
 				tempWord = iterator.next();
+
 				System.out.println("Writing to file " + c.name + "-"
 						+ databaseURL + ".txt : " + tempWord + " : "
 						+ sum.get(tempWord));
@@ -188,6 +196,11 @@ public class ClassifyMe {
 			for (int j = 0; j < c.subcategories.size(); j++) {
 				c.subcategories.elementAt(j).coverage = 0;
 			}
+			File f = new File(categoryName.toLowerCase() + ".txt");
+			if (!f.exists()) {
+				System.err
+				.println("File " + categoryName.toLowerCase() + ".txt" + " is not found. It should provide the queries for category " + categoryName.toLowerCase());
+			}
 			BufferedReader input = new BufferedReader(new FileReader(
 					categoryName.toLowerCase() + ".txt"));
 			String line = null;
@@ -199,7 +212,7 @@ public class ClassifyMe {
 					index = line.indexOf((int) ' ');
 					if (index < 0) {
 						System.err
-								.println("No space found. Error parsing a line containg category and probing query");
+								.println("No space found. Error parsing a line containing category and probing query");
 						index = 0;
 					}
 					subcatName = line.substring(0, index);
@@ -313,6 +326,20 @@ public class ClassifyMe {
 			NamedNodeMap nodeMap = node.getAttributes();
 			node = nodeMap.getNamedItem("totalhits");
 			count = Integer.parseInt(node.getTextContent());
+			
+/*
+			// write down the number of matches found for this query
+			File f = new File(databaseURL + '/' + query + ".txt");
+			if (f.exists()) {
+				System.out.println("Query probe file already exists. We delete it.");
+				f.delete();
+			}
+			FileOutputStream output;
+			output = new FileOutputStream(databaseURL + '/' + query + ".txt");
+			PrintStream file = new PrintStream(output);
+			file.println(count);
+			output.close();
+*/			
 			nodeL = doc.getElementsByTagName("result");
 			for (int i = 0; i < sampleSize; i++) {
 				node = nodeL.item(i);
@@ -348,12 +375,12 @@ public class ClassifyMe {
 		cm.coverage = Integer.parseInt(args[2]);
 		cm.classification = cm.classify(cm.root);
 		for (int k = 0; k < cm.classification.size(); k++) {
-			// System.out.println(cm.classification.elementAt(k).name);
-			cm.printCategoryPath(cm.classification.elementAt(k));
+			cm.categoryPaths.add("");
+			cm.getCategoryPath(cm.classification.elementAt(k), k);
 		}
-		System.out.println("Classification: " + cm.getClassificationPath());
+		System.out.println("Classification: " + cm.getClassificationPaths());
 		String summary = "";
-		summary = cm.getClassificationPath().replace("/",
+		summary = cm.getClassificationPaths().replace("/",
 				"-" + cm.databaseURL + ".txt and ");
 		summary = summary + "-" + cm.databaseURL + ".txt";
 		System.out.println("Write summary to file: " + summary);
