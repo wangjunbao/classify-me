@@ -2,10 +2,10 @@ package classify;
 
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 import java.util.Scanner;
 import javax.xml.parsers.*;
@@ -89,30 +89,8 @@ public class ClassifyMe {
 		root.printTree();
 	}
 
-	public String getClassificationPath() {
+	protected String getClassificationPath() {
 		return categoryPath;
-	}
-
-	private ArrayList<String> addElementToList(ArrayList<String> array,
-			int start, int end, String element) {
-		if (start == end) {
-			if (end == 0)
-				array.add(element);
-			else {
-				array.add(start, element);
-			}
-
-		} else {
-			String temp = array.get(array.size() / 2);
-			if (element.compareTo(temp) < 0)
-				array = addElementToList(array, start, array.size() / 2,
-						element);
-			else
-				array = addElementToList(array, array.size() / 2 + 1, array
-						.size(), element);
-		}
-		return array;
-
 	}
 
 	/**
@@ -135,7 +113,8 @@ public class ClassifyMe {
 		Set<String> tempWords;
 		Integer innerTempValue;
 		String tempUrl;
-		ArrayList<String> keys = new ArrayList<String>();
+		// use tree set to sort words in alphabetical order
+		Set<String> keys = new TreeSet<String>();
 		Iterator<String> iterator = c.samples.keySet().iterator();
 		while (iterator.hasNext()) {
 			tempUrl = (String) (iterator.next());
@@ -154,32 +133,29 @@ public class ClassifyMe {
 						sum.put(tempWord, innerTempValue);
 					} else {
 						sum.put(tempWord, 1);
-						keys = addElementToList(keys, 0, keys.size(), tempWord);
 						System.out.println(tempWord);
+						keys.add(tempWord);
+
 					}
 				}
 			}
 		}
 		FileOutputStream output;
+
 		try {
+			File f = new File(c.name + "-" + databaseURL + ".txt");
+			if (f.exists())
+				f.delete();
 			output = new FileOutputStream(c.name + "-" + databaseURL + ".txt");
 			PrintStream file = new PrintStream(output);
 			System.out.println("keys size : " + keys.size());
-			// Sort words to alphabetical order
-			for (int i = 0; i < keys.size(); i++) {
-				for (int j = 0; j < keys.size() - i - 1; j++) {
-					if ((keys.get(j).compareTo(keys.get(j + 1))) < 0) {
-						tempWord = keys.get(j);
-						keys.remove(j);
-						keys.add(j + 1, tempWord);
-					}
-				}
+			iterator = keys.iterator();
+			while (iterator.hasNext()) {
+				tempWord = iterator.next();
 				System.out.println("Writing to file " + c.name + "-"
-						+ databaseURL + ".txt : "
-						+ keys.get(keys.size() - i - 1) + " : "
-						+ sum.get(keys.get(keys.size() - i - 1)));
-				file.println(keys.get(keys.size() - i - 1) + " : "
-						+ sum.get(keys.get(keys.size() - i - 1)));
+						+ databaseURL + ".txt : " + tempWord + " : "
+						+ sum.get(tempWord));
+				file.println(tempWord + " : " + sum.get(tempWord));
 			}
 			output.close();
 		} catch (FileNotFoundException e) {
