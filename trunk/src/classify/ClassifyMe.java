@@ -108,8 +108,8 @@ public class ClassifyMe {
 				array = addElementToList(array, start, array.size() / 2,
 						element);
 			else
-				array = addElementToList(array, array.size() / 2 , array
-						.size() - 1, element);
+				array = addElementToList(array, array.size() / 2 + 1, array
+						.size(), element);
 		}
 		return array;
 
@@ -154,8 +154,7 @@ public class ClassifyMe {
 						sum.put(tempWord, innerTempValue);
 					} else {
 						sum.put(tempWord, 1);
-						keys = addElementToList(keys, 0, keys.size(),
-								tempWord);
+						keys = addElementToList(keys, 0, keys.size(), tempWord);
 						System.out.println(tempWord);
 					}
 				}
