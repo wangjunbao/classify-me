@@ -76,6 +76,8 @@ public class GetWordsLynx {
 		}
 		// Set<String> document = new TreeSet<String>();
 		StringTokenizer st = new StringTokenizer(output.toString());
+		// use hashtable instead of TreeSet to make sure there is no duplicated
+		// words in the result set
 		Hashtable<String, Integer> hash = new Hashtable<String, Integer>();
 		while (st.hasMoreTokens()) {
 			String tok = st.nextToken();
@@ -85,14 +87,6 @@ public class GetWordsLynx {
 				// document.add(tok);
 			}
 		}
-		// Iterator<String> iterator = hash.keySet().iterator();
-		// String term;
-		// Integer termCount;
-		// while (iterator.hasNext()) {
-		// term = (String) (iterator.next());
-		// termCount = hash.get(term);
-		// System.out.println(term);
-		// }
 		return hash.keySet();
 	}
 

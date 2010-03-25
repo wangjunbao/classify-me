@@ -90,38 +90,50 @@ public class ClassifyMe {
 		root.printTree();
 	}
 
+	/**
+	 * return current classification path varible value
+	 * 
+	 * @return current classification path
+	 */
 	protected String getClassificationPaths() {
 		String res = "";
-		for(int i = 0; i < categoryPaths.size(); i++) {
+		for (int i = 0; i < categoryPaths.size(); i++) {
 			res = res + categoryPaths.get(i) + ", ";
 		}
 		if (res.length() >= 2)
-			res = res.substring(0, res.length()-2);
+			res = res.substring(0, res.length() - 2);
 		return res;
 	}
 
 	/**
-	 * Get the i^th Category path the database belongs to and make summary
-	 * based on its classification
+	 * Get the i^th Category path the database belongs to and make summary based
+	 * on its classification
 	 * 
 	 * @param c
 	 *            the Child class node that database belongs to
 	 */
 	protected void getCategoryPath(Category c, int i) {
+		// if current node has parents, we will recursively call this function
+		// to get the full path
 		if (c.parent != null) {
 			getCategoryPath(c.parent, i);
 			categoryPaths.set(i, categoryPaths.get(i) + '/');
 		}
 		categoryPaths.set(i, categoryPaths.get(i) + c.name);
-//		categoryPath = categoryPath + c.name;
-		Iterator<String> innerIterator;
+
+		// make summary on current category node
+		// hashtable sum is used for counting words
 		Hashtable<String, Integer> sum = new Hashtable<String, Integer>();
-		String tempWord;
+		// temporary set to store the string set returned from the lynx function
 		Set<String> tempWords;
+		String tempWord;
 		Integer innerTempValue;
 		String tempUrl;
+		Iterator<String> innerIterator;
+
 		// use tree set to sort words in alphabetical order
 		Set<String> keys = new TreeSet<String>();
+		// get sample urls of current category node
 		Iterator<String> iterator = c.samples.keySet().iterator();
 		while (iterator.hasNext()) {
 			tempUrl = (String) (iterator.next());
@@ -140,15 +152,14 @@ public class ClassifyMe {
 						sum.put(tempWord, innerTempValue);
 					} else {
 						sum.put(tempWord, 1);
-						System.out.println(tempWord);
 						keys.add(tempWord);
 
 					}
 				}
 			}
 		}
+		// print the words statistic data to file
 		FileOutputStream output;
-
 		try {
 			File f = new File(c.name + "-" + databaseURL + ".txt");
 			if (f.exists())
@@ -159,11 +170,7 @@ public class ClassifyMe {
 			iterator = keys.iterator();
 			while (iterator.hasNext()) {
 				tempWord = iterator.next();
-
-				System.out.println("Writing to file " + c.name + "-"
-						+ databaseURL + ".txt : " + tempWord + " : "
-						+ sum.get(tempWord));
-				file.println(tempWord + " : " + sum.get(tempWord));
+				file.println(tempWord + " # " + sum.get(tempWord));
 			}
 			output.close();
 		} catch (FileNotFoundException e) {
@@ -199,7 +206,11 @@ public class ClassifyMe {
 			File f = new File(categoryName.toLowerCase() + ".txt");
 			if (!f.exists()) {
 				System.err
-				.println("File " + categoryName.toLowerCase() + ".txt" + " is not found. It should provide the queries for category " + categoryName.toLowerCase());
+						.println("File "
+								+ categoryName.toLowerCase()
+								+ ".txt"
+								+ " is not found. It should provide the queries for category "
+								+ categoryName.toLowerCase());
 			}
 			BufferedReader input = new BufferedReader(new FileReader(
 					categoryName.toLowerCase() + ".txt"));
@@ -218,10 +229,7 @@ public class ClassifyMe {
 					subcatName = line.substring(0, index);
 					probingQuery = line.substring(index + 1);
 					c.queries.addElement(probingQuery);
-					// System.out.println("name:" + subcatName + " query:" +
-					// probingQuery);
 					c = probe(probingQuery, c);
-					// System.out.println(count);
 					c.coverage += count;
 					for (int j = 0; j < c.subcategories.size(); j++) {
 						if (c.subcategories.elementAt(j).name
@@ -327,33 +335,38 @@ public class ClassifyMe {
 			NamedNodeMap nodeMap = node.getAttributes();
 			node = nodeMap.getNamedItem("totalhits");
 			count = Integer.parseInt(node.getTextContent());
-			
 
 			// write down the number of matches found for this query
 			File f = new File(databaseURL + '/' + query + ".txt");
 			if (f.exists()) {
-				System.out.println("Query probe file already exists. Checking if the count is the same...");
-				BufferedReader input = new BufferedReader(new FileReader(databaseURL + '/' + query + ".txt"));
+				System.out
+						.println("Query probe file already exists. Checking if the count is the same...");
+				BufferedReader input = new BufferedReader(new FileReader(
+						databaseURL + '/' + query + ".txt"));
 				String line;
-				if ((line = input.readLine()) != null && Integer.parseInt(line) == count) {
-					
+				if ((line = input.readLine()) != null
+						&& Integer.parseInt(line) == count) {
+
 				} else {
 					System.err.println("Problem verifing query hit count.");
 					System.err.println("query: " + query);
-					System.err.println("old count:" + line + " new count:" + count);
+					System.err.println("old count:" + line + " new count:"
+							+ count);
 					System.exit(1);
 				}
 				input.close();
 			} else {
 				FileOutputStream output;
 				f = new File(databaseURL);
-				if (!f.exists()) f.mkdir();
-				output = new FileOutputStream(databaseURL + '/' + query + ".txt");
+				if (!f.exists())
+					f.mkdir();
+				output = new FileOutputStream(databaseURL + '/' + query
+						+ ".txt");
 				PrintStream file = new PrintStream(output);
 				file.println(count);
 				output.close();
 			}
-			
+
 			nodeL = doc.getElementsByTagName("result");
 			for (int i = 0; i < sampleSize; i++) {
 				node = nodeL.item(i);
