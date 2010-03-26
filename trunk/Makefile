@@ -5,15 +5,14 @@ JC = javac
 	$(JC) $(JFLAGS) $*.java
 
 CLASSES = \
-        classify/Category.java \
-        classify/ClassifyMe.java \
-        classify/GetWordsLynx.java \
-        classify/SearchResult.java	  
-
+        src/classify/Category.java \
+        src/classify/GetWordsLynx.java \
+        src/classify/SearchResult.java	  
+        src/classify/ClassifyMe.java \
 default: classes
 
 classes: $(CLASSES:.java=.class)
 
 clean:
-	$(RM) searchme/util/*.class
+	$(RM) bin/*.class
 
