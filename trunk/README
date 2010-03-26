@@ -18,7 +18,7 @@ Source Code:
 	./classify/GetWordLynx.java
 	./classify/SearchResult.java
 	./classify/ClassifyMe.java
-Makefile: 
+Makefile:
 	./Makefile
 
 c) A clear description of how to run your program (note that your project must compile/run under Linux in your CS account);
@@ -42,8 +42,6 @@ The last two classes we have built are:
 
 Part 1: Web Database Classification
 
-TODO: Mariya is writing this part
-
 In order to classify web database we first built the 2-level categorization scheme (the category hierarchy). We then implement the query probing algorithm described in Figure 4 of the QProber paper without the confusion matrix. The function which implements this is called "classify", and internally it uses function "probe" in order to probe the database with a particular query. As required by the project we take all queries for probing from file named as the category name.
 We update the coverage and specificity for the subcategories of category c as follows:
 
@@ -55,15 +53,7 @@ This is exactly as desribed in def. 3.2 and 3.3 in the QProber paper.
 
 Then in the main function we call classify with parameter root (which has specificity 1.0). Thus, we start our classification procedure from the top.
 
-
-
 Part 2: Metasearching over Web Databases
-
-e) Your Yahoo! Search BOSS Application ID
-
-Search BOSS Application ID: Iu5udbvV34Fcg3uDwfJMTEY8Lb09.yMmFTaf7axWid3g4LmEN3G3iBUs6pa6jrRE
-
-f) Any additional information that you consider significant. 
 
 For implement part 2, we first store all the top 4 search result urls for  
 each query for each category in a hashtable which will help us to eliminate 
@@ -78,3 +68,10 @@ Once we get the words back, we will use hashtable to make word frequency statist
 and put each new word in a TreeSet structure which can help us to sort words 
 in alphabetical order. Then we will get iterator of such TreeSet and output each word
 count to certain file in alphabetical order.
+
+e) Your Yahoo! Search BOSS Application ID
+
+Search BOSS Application ID: Iu5udbvV34Fcg3uDwfJMTEY8Lb09.yMmFTaf7axWid3g4LmEN3G3iBUs6pa6jrRE
+
+f) Any additional information that you consider significant. 
+
