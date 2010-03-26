@@ -24,7 +24,6 @@ public class ClassifyMe {
 	private Category root;
 	private int count;
 	private int sampleSize = 4;
-	private Hashtable<String, Integer> samples = new Hashtable<String, Integer>();
 
 	/**
 	 * Initialize the category tree
@@ -120,14 +119,15 @@ public class ClassifyMe {
 			categoryPaths.set(i, categoryPaths.get(i) + '/');
 		}
 		categoryPaths.set(i, categoryPaths.get(i) + c.name);
-		if (c.extractedSummary == false)
-			extractSummary(c);
 	}
 	
 	private void extractSummary(Category c) {
-		if (c.subcategories == null) {
-			// this category is leaf so don't build content summary
-		} else {
+		if (c.parent != null) {
+			extractSummary(c.parent);
+		}
+		// if this category is leaf so don't build content summary
+		// so if it is not a leaf and summary has not been built 
+		if (!c.extractedSummary && c.subcategories != null) {
 			// make summary on current category node
 			// hashtable sum is used for counting words
 			System.out.println("Building summary for category:" + c.name);
@@ -151,7 +151,7 @@ public class ClassifyMe {
 				// make sure no duplicated url from different queries
 				if (!catSamples.containsKey(tempUrl)) {
 					catSamples.put(tempUrl, 1);
-					System.out.println("Crawling : " + tempUrl);
+//					System.out.println("Crawling : " + tempUrl);
 					tempWords = GetWordsLynx.runLynx(tempUrl);
 					innerIterator = tempWords.iterator();
 					// Calculate document frequency for each word
@@ -174,16 +174,17 @@ public class ClassifyMe {
 				File f = new File(c.name + "-" + databaseURL + ".txt");
 				if (f.exists())
 					f.delete();
-					output = new FileOutputStream(c.name + "-" + databaseURL + ".txt");
-					PrintStream file = new PrintStream(output);
-					System.out.println("Category: " + c.name +  " keys size : " + keys.size());
-					iterator = keys.iterator();
-					while (iterator.hasNext()) {
-						tempWord = iterator.next();
-						file.println(tempWord + "#" + sum.get(tempWord));
-					}
-					output.close();
-					c.extractedSummary = true;
+				output = new FileOutputStream(c.name + "-" + databaseURL + ".txt");
+				PrintStream file = new PrintStream(output);
+				System.out.println("Category: " + c.name +  ", Keys size : " + keys.size());
+				iterator = keys.iterator();
+				while (iterator.hasNext()) {
+					tempWord = iterator.next();
+					file.println(tempWord + "#" + sum.get(tempWord));
+				}
+				output.close();
+				System.out.println("Writing summary to file: " + c.name + "-" + databaseURL + ".txt");
+				c.extractedSummary = true;
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -191,7 +192,7 @@ public class ClassifyMe {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}	
+		}
 	}
 
 	/**
@@ -304,7 +305,7 @@ public class ClassifyMe {
 			url = new URL("http://boss.yahooapis.com/ysearch/web/v1/"
 					+ urlQuery + "?appid=" + appId + "&format=xml&sites="
 					+ databaseURL);
-			System.out.println(url);
+
 			URLConnection con = url.openConnection();
 			InputStream inStream = con.getInputStream();
 			Scanner in = new Scanner(inStream);
@@ -352,7 +353,7 @@ public class ClassifyMe {
 			// write down the number of matches found for this query
 			File f = new File("cache/" + databaseURL + '/' + query + ".txt");
 			if (f.exists()) {
-				System.out.println("Query probe file already exists. Checking if the count is the same...");
+//				System.out.println("Query probe file already exists. Checking if the count is the same...");
 				BufferedReader input = new BufferedReader(new FileReader("cache/" + databaseURL + '/' + query + ".txt"));
 				String line;
 				if ((line = input.readLine()) != null
@@ -428,11 +429,18 @@ public class ClassifyMe {
 			cm.categoryPaths.add("");
 			cm.getCategoryPath(cm.classification.elementAt(k), k);
 		}
+		
 		System.out.println("Classification: " + cm.getClassificationPaths());
+		
+		for (int k = 0; k < cm.classification.size(); k++) {
+			cm.extractSummary(cm.classification.elementAt(k));
+		}
+/*		
 		String summary = "";
 		summary = cm.getClassificationPaths().replace("/",
 				"-" + cm.databaseURL + ".txt and ");
 		summary = summary + "-" + cm.databaseURL + ".txt";
 		System.out.println("Write summary to file: " + summary);
+*/
 	}
 }
