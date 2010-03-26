@@ -37,10 +37,21 @@ The last two classes we have built are:
 - SearchResult which represents a particular page result returned by Yahoo.
 - GetWordsLynx which is a wrapup around the execution of Lynx (the text browser used for page crawling)
 
-
 Part 1: Web Database Classification
 
 TODO: Mariya is writing this part
+
+In order to classify web database we first built the 2-level categorization scheme (the category hierarchy). We then implement the query probing algorithm described in Figure 4 of the QProber paper without the confusion matrix. The function which implements this is called "classify", and internally it uses function "probe" in order to probe the database with a particular query. As required by the project we take all queries for probing from file named as the category name.
+We update the coverage and specificity for the subcategories of category c as follows:
+
+coverage(subcategory i of c) = sum of all hits when probing with quiries for subcategory i
+
+specificity(subcategory i of c) = (specificity(c)) * (coverage(subcategory i of c)) / (sum of all hits when probing with quiries for any subcategory of c)
+
+This is exactly as desribed in def. 3.2 and 3.3 in the QProber paper.
+
+Then in the main function we call classify with parameter root (which has specificity 1.0). Thus, we start our classification procedure from the top.
+
 
 
 Part 2: Metasearching over Web Databases
