@@ -14,7 +14,10 @@ Files containing the provided queries (used for probing):
 	./health.txt
 	./computers.txt
 Source Code: 
-
+	./classiy/Category.java
+	./classify/GetWordLynx.java
+	./classify/SearchResult.java
+	./classify/ClassifyMe.java
 Makefile: 
 	./Makefile
 
