@@ -140,7 +140,7 @@ public class ClassifyMe {
 			// make sure no duplicated url from different queries
 			if (!samples.containsKey(tempUrl)) {
 				samples.put(tempUrl, 1);
-//				System.out.println("Crawling : " + tempUrl);
+				System.out.println("Getting Page : " + tempUrl + "\n\n");
 				tempWords = GetWordsLynx.runLynx(tempUrl);
 				innerIterator = tempWords.iterator();
 				// Calculate document frequency for each word
