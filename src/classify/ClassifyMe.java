@@ -170,7 +170,7 @@ public class ClassifyMe {
 			iterator = keys.iterator();
 			while (iterator.hasNext()) {
 				tempWord = iterator.next();
-				file.println(tempWord + " # " + sum.get(tempWord));
+				file.println(tempWord + "#" + sum.get(tempWord));
 			}
 			output.close();
 		} catch (FileNotFoundException e) {
@@ -292,7 +292,6 @@ public class ClassifyMe {
 			url = new URL("http://boss.yahooapis.com/ysearch/web/v1/"
 					+ urlQuery + "?appid=" + appId + "&format=xml&sites="
 					+ databaseURL);
-			System.out.println(url);
 			URLConnection con = url.openConnection();
 			InputStream inStream = con.getInputStream();
 			Scanner in = new Scanner(inStream);
