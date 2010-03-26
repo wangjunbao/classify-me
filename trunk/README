@@ -29,7 +29,7 @@ c) A clear description of how to run your program (note that your project must c
 TODO: I will try to fix this before submitting (right now it does not work)
 
     java classify.ClassifyMe <database> <specificity> <coverage> <appId>
-EXAMPLE: java searchme.util.SearchMe yahoo.com 0.25 100 "Iu5udbvV34Fcg3uDwfJMTEY8Lb09.yMmFTaf7axWid3g4LmEN3G3iBUs6pa6jrRE"
+EXAMPLE: java classify/ClassifyMe yahoo.com 0.25 100 "Iu5udbvV34Fcg3uDwfJMTEY8Lb09.yMmFTaf7axWid3g4LmEN3G3iBUs6pa6jrRE"
 	
 d) A clear description of the internal design of your project, for each part of the project
 
