@@ -120,28 +120,35 @@ public class ClassifyMe {
 		}
 		categoryPaths.set(i, categoryPaths.get(i) + c.name);
 	}
-	
+
+	/**
+	 * This function will extract summary for given database for each category
+	 * 
+	 * @param c
+	 *            current category node
+	 */
 	private void extractSummary(Category c) {
 		if (c.parent != null) {
 			extractSummary(c.parent);
 		}
 		// if this category is leaf so don't build content summary
-		// so if it is not a leaf and summary has not been built 
+		// so if it is not a leaf and summary has not been built
 		if (!c.extractedSummary && c.subcategories != null) {
 			// make summary on current category node
 			// hashtable sum is used for counting words
 			System.out.println("Building summary for category:" + c.name);
-			
+
 			Hashtable<String, Integer> catSamples = new Hashtable<String, Integer>();
-			
+
 			Hashtable<String, Integer> sum = new Hashtable<String, Integer>();
-			// temporary set to store the string set returned from the lynx function
+			// temporary set to store the string set returned from the lynx
+			// function
 			Set<String> tempWords;
 			String tempWord;
 			Integer innerTempValue;
 			String tempUrl;
 			Iterator<String> innerIterator;
-	
+
 			// use tree set to sort words in alphabetical order
 			Set<String> keys = new TreeSet<String>();
 			// get sample urls of current category node
@@ -151,7 +158,7 @@ public class ClassifyMe {
 				// make sure no duplicated url from different queries
 				if (!catSamples.containsKey(tempUrl)) {
 					catSamples.put(tempUrl, 1);
-//					System.out.println("Crawling : " + tempUrl);
+					System.out.println("Getting Page : " + tempUrl + "\n\n");
 					tempWords = GetWordsLynx.runLynx(tempUrl);
 					innerIterator = tempWords.iterator();
 					// Calculate document frequency for each word
@@ -174,16 +181,19 @@ public class ClassifyMe {
 				File f = new File(c.name + "-" + databaseURL + ".txt");
 				if (f.exists())
 					f.delete();
-				output = new FileOutputStream(c.name + "-" + databaseURL + ".txt");
+				output = new FileOutputStream(c.name + "-" + databaseURL
+						+ ".txt");
 				PrintStream file = new PrintStream(output);
-				System.out.println("Category: " + c.name +  ", Keys size : " + keys.size());
+				System.out.println("Category: " + c.name + ", Keys size : "
+						+ keys.size());
 				iterator = keys.iterator();
 				while (iterator.hasNext()) {
 					tempWord = iterator.next();
 					file.println(tempWord + "#" + sum.get(tempWord));
 				}
 				output.close();
-				System.out.println("Writing summary to file: " + c.name + "-" + databaseURL + ".txt");
+				System.out.println("Writing summary to file: " + c.name + "-"
+						+ databaseURL + ".txt");
 				c.extractedSummary = true;
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
@@ -242,7 +252,9 @@ public class ClassifyMe {
 					}
 					subcatName = line.substring(0, index);
 					probingQuery = line.substring(index + 1);
-					probingQuery = probingQuery.trim(); // we want to get rid of white spaces at the end or beginning of the string
+					probingQuery = probingQuery.trim();
+					// we want to get rid of white spaces at the end or
+					// beginning of the string
 					c.queries.addElement(probingQuery);
 					c = probe(probingQuery, c);
 					c.coverage += count;
@@ -262,11 +274,11 @@ public class ClassifyMe {
 					c.subcategories.elementAt(j).specificity = (c.specificity)
 							* (c.subcategories.elementAt(j).coverage)
 							/ c.coverage;
-					System.out.println("Specificity for category:" + c.subcategories.elementAt(j).name
-							+ " is "
+					System.out.println("Specificity for category:"
+							+ c.subcategories.elementAt(j).name + " is "
 							+ c.subcategories.elementAt(j).specificity);
-					System.out.println("Coverage for category:" + c.subcategories.elementAt(j).name
-							+ " is "
+					System.out.println("Coverage for category:"
+							+ c.subcategories.elementAt(j).name + " is "
 							+ c.subcategories.elementAt(j).coverage);
 					if (c.subcategories.elementAt(j).specificity > specificity
 							&& c.subcategories.elementAt(j).coverage > coverage) {
@@ -353,8 +365,8 @@ public class ClassifyMe {
 			// write down the number of matches found for this query
 			File f = new File("cache/" + databaseURL + '/' + query + ".txt");
 			if (f.exists()) {
-//				System.out.println("Query probe file already exists. Checking if the count is the same...");
-				BufferedReader input = new BufferedReader(new FileReader("cache/" + databaseURL + '/' + query + ".txt"));
+				BufferedReader input = new BufferedReader(new FileReader(
+						"cache/" + databaseURL + '/' + query + ".txt"));
 				String line;
 				if ((line = input.readLine()) != null
 						&& Integer.parseInt(line) == count) {
@@ -364,11 +376,11 @@ public class ClassifyMe {
 					System.err.println("query: " + query);
 					System.err.println("old count:" + line + " new count:"
 							+ count);
-//					System.exit(1);
 				}
 				input.close();
 			} else {
-				// if the cache does not exist we need to create the appropriate folders first
+				// if the cache does not exist we need to create the appropriate
+				// folders first
 				FileOutputStream output;
 				f = new File("cache/");
 				if (!f.exists()) {
@@ -376,7 +388,8 @@ public class ClassifyMe {
 					f = new File("cache/" + databaseURL);
 					f.mkdir();
 				}
-				output = new FileOutputStream("cache/" + databaseURL + '/' + query + ".txt");
+				output = new FileOutputStream("cache/" + databaseURL + '/'
+						+ query + ".txt");
 				PrintStream file = new PrintStream(output);
 				file.println(count);
 				output.close();
@@ -414,9 +427,9 @@ public class ClassifyMe {
 		ClassifyMe cm = new ClassifyMe();
 		cm.databaseURL = args[0];
 		File f = new File("cache/" + cm.databaseURL);
-		if (f.exists()) { 
-			File[] files = f.listFiles(); 
-			for (int i=0; i<files.length; i++) {
+		if (f.exists()) {
+			File[] files = f.listFiles();
+			for (int i = 0; i < files.length; i++) {
 				files[i].delete();
 			}
 			System.out.println("The old cache directory has been removed.");
@@ -429,18 +442,11 @@ public class ClassifyMe {
 			cm.categoryPaths.add("");
 			cm.getCategoryPath(cm.classification.elementAt(k), k);
 		}
-		
+
 		System.out.println("Classification: " + cm.getClassificationPaths());
-		
+
 		for (int k = 0; k < cm.classification.size(); k++) {
 			cm.extractSummary(cm.classification.elementAt(k));
 		}
-/*		
-		String summary = "";
-		summary = cm.getClassificationPaths().replace("/",
-				"-" + cm.databaseURL + ".txt and ");
-		summary = summary + "-" + cm.databaseURL + ".txt";
-		System.out.println("Write summary to file: " + summary);
-*/
 	}
 }
