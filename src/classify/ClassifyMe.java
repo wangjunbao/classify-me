@@ -152,7 +152,6 @@ public class ClassifyMe {
 						sum.put(tempWord, innerTempValue);
 					} else {
 						sum.put(tempWord, 1);
-//						System.out.println(tempWord);
 						keys.add(tempWord);
 
 					}
@@ -171,12 +170,7 @@ public class ClassifyMe {
 			iterator = keys.iterator();
 			while (iterator.hasNext()) {
 				tempWord = iterator.next();
-///*
-				System.out.println("Writing to file " + c.name + "-"
-						+ databaseURL + ".txt : " + tempWord + " : "
-						+ sum.get(tempWord));
-//*/
-				file.println(tempWord + " : " + sum.get(tempWord));
+				file.println(tempWord + " # " + sum.get(tempWord));
 			}
 			output.close();
 		} catch (FileNotFoundException e) {
