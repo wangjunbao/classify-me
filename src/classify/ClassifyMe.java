@@ -27,7 +27,7 @@ public class ClassifyMe {
 	private Hashtable<String, Integer> samples = new Hashtable<String, Integer>();
 
 	/**
-	 * Initialize the category tree from file
+	 * Initialize the category tree
 	 */
 	public ClassifyMe() {
 
@@ -91,7 +91,7 @@ public class ClassifyMe {
 	}
 
 	/**
-	 * return current classification path varible value
+	 * return current classification path variable value
 	 * 
 	 * @return current classification path
 	 */
@@ -209,7 +209,7 @@ public class ClassifyMe {
 						.println("File "
 								+ categoryName.toLowerCase()
 								+ ".txt"
-								+ " is not found. It should provide the queries for category "
+								+ " is not found. It should provide the queries for category."
 								+ categoryName.toLowerCase());
 			}
 			BufferedReader input = new BufferedReader(new FileReader(
@@ -228,6 +228,7 @@ public class ClassifyMe {
 					}
 					subcatName = line.substring(0, index);
 					probingQuery = line.substring(index + 1);
+					probingQuery = probingQuery.trim(); // we want to get rid of white spaces at the end or beginning of the string
 					c.queries.addElement(probingQuery);
 					c = probe(probingQuery, c);
 					c.coverage += count;
@@ -350,7 +351,7 @@ public class ClassifyMe {
 					System.err.println("query: " + query);
 					System.err.println("old count:" + line + " new count:"
 							+ count);
-					System.exit(1);
+//					System.exit(1);
 				}
 				input.close();
 			} else {
@@ -396,7 +397,6 @@ public class ClassifyMe {
 					.println("Usage: ClassifyMe <database-url> <specificity> <coverage> <yahoo appId>");
 			System.exit(1);
 		}
-		
 		ClassifyMe cm = new ClassifyMe();
 		cm.databaseURL = args[0];
 		File f = new File("cache/" + cm.databaseURL);
@@ -405,6 +405,7 @@ public class ClassifyMe {
 			for (int i=0; i<files.length; i++) {
 				files[i].delete();
 			}
+			System.out.println("The old cache directory has been removed.");
 		}
 		cm.specificity = Double.parseDouble(args[1]);
 		cm.coverage = Integer.parseInt(args[2]);
