@@ -120,66 +120,78 @@ public class ClassifyMe {
 			categoryPaths.set(i, categoryPaths.get(i) + '/');
 		}
 		categoryPaths.set(i, categoryPaths.get(i) + c.name);
-
-		// make summary on current category node
-		// hashtable sum is used for counting words
-		Hashtable<String, Integer> sum = new Hashtable<String, Integer>();
-		// temporary set to store the string set returned from the lynx function
-		Set<String> tempWords;
-		String tempWord;
-		Integer innerTempValue;
-		String tempUrl;
-		Iterator<String> innerIterator;
-
-		// use tree set to sort words in alphabetical order
-		Set<String> keys = new TreeSet<String>();
-		// get sample urls of current category node
-		Iterator<String> iterator = c.samples.keySet().iterator();
-		while (iterator.hasNext()) {
-			tempUrl = (String) (iterator.next());
-			// make sure no duplicated url from different queries
-			if (!samples.containsKey(tempUrl)) {
-				samples.put(tempUrl, 1);
-				System.out.println("Getting Page : " + tempUrl + "\n\n");
-				tempWords = GetWordsLynx.runLynx(tempUrl);
-				innerIterator = tempWords.iterator();
-				// Calculate document frequency for each word
-				while (innerIterator.hasNext()) {
-					tempWord = innerIterator.next();
-					if (sum.containsKey(tempWord)) {
-						innerTempValue = (Integer) sum.get(tempWord);
-						innerTempValue = innerTempValue + 1;
-						sum.put(tempWord, innerTempValue);
-					} else {
-						sum.put(tempWord, 1);
-						keys.add(tempWord);
-
+		if (c.extractedSummary == false)
+			extractSummary(c);
+	}
+	
+	private void extractSummary(Category c) {
+		if (c.subcategories == null) {
+			// this category is leaf so don't build content summary
+		} else {
+			// make summary on current category node
+			// hashtable sum is used for counting words
+			System.out.println("Building summary for category:" + c.name);
+			
+			Hashtable<String, Integer> catSamples = new Hashtable<String, Integer>();
+			
+			Hashtable<String, Integer> sum = new Hashtable<String, Integer>();
+			// temporary set to store the string set returned from the lynx function
+			Set<String> tempWords;
+			String tempWord;
+			Integer innerTempValue;
+			String tempUrl;
+			Iterator<String> innerIterator;
+	
+			// use tree set to sort words in alphabetical order
+			Set<String> keys = new TreeSet<String>();
+			// get sample urls of current category node
+			Iterator<String> iterator = c.samples.keySet().iterator();
+			while (iterator.hasNext()) {
+				tempUrl = (String) (iterator.next());
+				// make sure no duplicated url from different queries
+				if (!catSamples.containsKey(tempUrl)) {
+					catSamples.put(tempUrl, 1);
+					System.out.println("Crawling : " + tempUrl);
+					tempWords = GetWordsLynx.runLynx(tempUrl);
+					innerIterator = tempWords.iterator();
+					// Calculate document frequency for each word
+					while (innerIterator.hasNext()) {
+						tempWord = innerIterator.next();
+						if (sum.containsKey(tempWord)) {
+							innerTempValue = (Integer) sum.get(tempWord);
+							innerTempValue = innerTempValue + 1;
+							sum.put(tempWord, innerTempValue);
+						} else {
+							sum.put(tempWord, 1);
+							keys.add(tempWord);
+						}
 					}
 				}
 			}
-		}
-		// print the words statistic data to file
-		FileOutputStream output;
-		try {
-			File f = new File(c.name + "-" + databaseURL + ".txt");
-			if (f.exists())
-				f.delete();
-			output = new FileOutputStream(c.name + "-" + databaseURL + ".txt");
-			PrintStream file = new PrintStream(output);
-			System.out.println("keys size : " + keys.size());
-			iterator = keys.iterator();
-			while (iterator.hasNext()) {
-				tempWord = iterator.next();
-				file.println(tempWord + "#" + sum.get(tempWord));
+			// print the words statistic data to file
+			FileOutputStream output;
+			try {
+				File f = new File(c.name + "-" + databaseURL + ".txt");
+				if (f.exists())
+					f.delete();
+					output = new FileOutputStream(c.name + "-" + databaseURL + ".txt");
+					PrintStream file = new PrintStream(output);
+					System.out.println("Category: " + c.name +  " keys size : " + keys.size());
+					iterator = keys.iterator();
+					while (iterator.hasNext()) {
+						tempWord = iterator.next();
+						file.println(tempWord + "#" + sum.get(tempWord));
+					}
+					output.close();
+					c.extractedSummary = true;
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			output.close();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		}	
 	}
 
 	/**
@@ -292,6 +304,7 @@ public class ClassifyMe {
 			url = new URL("http://boss.yahooapis.com/ysearch/web/v1/"
 					+ urlQuery + "?appid=" + appId + "&format=xml&sites="
 					+ databaseURL);
+			System.out.println(url);
 			URLConnection con = url.openConnection();
 			InputStream inStream = con.getInputStream();
 			Scanner in = new Scanner(inStream);
@@ -339,7 +352,7 @@ public class ClassifyMe {
 			// write down the number of matches found for this query
 			File f = new File("cache/" + databaseURL + '/' + query + ".txt");
 			if (f.exists()) {
-//				System.out.println("Query probe file already exists. Checking if the count is the same...");
+				System.out.println("Query probe file already exists. Checking if the count is the same...");
 				BufferedReader input = new BufferedReader(new FileReader("cache/" + databaseURL + '/' + query + ".txt"));
 				String line;
 				if ((line = input.readLine()) != null
@@ -354,6 +367,7 @@ public class ClassifyMe {
 				}
 				input.close();
 			} else {
+				// if the cache does not exist we need to create the appropriate folders first
 				FileOutputStream output;
 				f = new File("cache/");
 				if (!f.exists()) {
