@@ -11,6 +11,7 @@ public class Category {
 	public Vector<Category> subcategories;
 	public Vector<String> queries = new Vector<String>();
 	public Hashtable<String, Integer> samples = new Hashtable<String, Integer>();
+	public boolean extractedSummary;
 
 	/**
 	 * class init function: set its specificity and coverage both to 0
@@ -20,6 +21,7 @@ public class Category {
 		specificity = 0;
 		coverage = 0;
 		parent = null;
+		extractedSummary = false;
 	}
 
 	/**
