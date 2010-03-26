@@ -56,11 +56,22 @@ Then in the main function we call classify with parameter root (which has specif
 
 Part 2: Metasearching over Web Databases
 
-TODO: LV, you can write this part
-
-e) Your Yahoo! Search BOSS Application ID (so we can test your project)
+e) Your Yahoo! Search BOSS Application ID
 
 Search BOSS Application ID: Iu5udbvV34Fcg3uDwfJMTEY8Lb09.yMmFTaf7axWid3g4LmEN3G3iBUs6pa6jrRE
 
 f) Any additional information that you consider significant. 
 
+For implement part 2, we first store all the top 4 search result urls for  
+each query for each category in a hashtable which will help us to eliminate 
+duplicated urls. 
+Then Once we have the database classification, we go through each category node. 
+For each node, we use loop to iterate all the query for such category node to 
+find sample urls.
+Then we call the GetWordLynx which will call lynx to crawl on the web return 
+all the non duplicated words for each document of every url stored in the 
+sample structure.
+Once we get the words back, we will use hashtable to make word frequency statistic
+and put each new word in a TreeSet structure which can help us to sort words 
+in alphabetical order. Then we will get iterator of such TreeSet and output each word
+count to certain file in alphabetical order.
