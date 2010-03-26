@@ -21,7 +21,8 @@ Source Code:
 Makefile:
 	./Makefile
 
-c) A clear description of how to run your program (note that your project must compile/run under Linux in your CS account);
+c) A clear description of how to run your program (note that your project 
+	must compile/run under Linux in your CS account);
 
 1. run "make"
 2. run the program by typing
