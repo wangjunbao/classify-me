@@ -140,7 +140,7 @@ public class ClassifyMe {
 			// make sure no duplicated url from different queries
 			if (!samples.containsKey(tempUrl)) {
 				samples.put(tempUrl, 1);
-				System.out.println("Crawling : " + tempUrl);
+//				System.out.println("Crawling : " + tempUrl);
 				tempWords = GetWordsLynx.runLynx(tempUrl);
 				innerIterator = tempWords.iterator();
 				// Calculate document frequency for each word
@@ -203,6 +203,7 @@ public class ClassifyMe {
 			for (int j = 0; j < c.subcategories.size(); j++) {
 				c.subcategories.elementAt(j).coverage = 0;
 			}
+
 			File f = new File(categoryName.toLowerCase() + ".txt");
 			if (!f.exists()) {
 				System.err
@@ -241,20 +242,19 @@ public class ClassifyMe {
 
 				}
 				input.close();
-				System.out.println(categoryName + " coverage:" + c.coverage);
 
 				// iterate category tree to find class for database by recursive
 				// calling classify()
 				for (int j = 0; j < c.subcategories.size(); j++) {
-					System.out.println(c.subcategories.elementAt(j).name
-							+ " coverage:"
-							+ c.subcategories.elementAt(j).coverage);
 					c.subcategories.elementAt(j).specificity = (c.specificity)
 							* (c.subcategories.elementAt(j).coverage)
 							/ c.coverage;
-					System.out.println(c.subcategories.elementAt(j).name
-							+ " specificity:"
+					System.out.println("Specificity for category:" + c.subcategories.elementAt(j).name
+							+ " is "
 							+ c.subcategories.elementAt(j).specificity);
+					System.out.println("Coverage for category:" + c.subcategories.elementAt(j).name
+							+ " is "
+							+ c.subcategories.elementAt(j).coverage);
 					if (c.subcategories.elementAt(j).specificity > specificity
 							&& c.subcategories.elementAt(j).coverage > coverage) {
 						catList.addAll(classify(c.subcategories.elementAt(j)));
@@ -339,7 +339,7 @@ public class ClassifyMe {
 			// write down the number of matches found for this query
 			File f = new File("cache/" + databaseURL + '/' + query + ".txt");
 			if (f.exists()) {
-				System.out.println("Query probe file already exists. Checking if the count is the same...");
+//				System.out.println("Query probe file already exists. Checking if the count is the same...");
 				BufferedReader input = new BufferedReader(new FileReader("cache/" + databaseURL + '/' + query + ".txt"));
 				String line;
 				if ((line = input.readLine()) != null
@@ -408,6 +408,7 @@ public class ClassifyMe {
 		}
 		cm.specificity = Double.parseDouble(args[1]);
 		cm.coverage = Integer.parseInt(args[2]);
+		System.out.println("Classifying...");
 		cm.classification = cm.classify(cm.root);
 		for (int k = 0; k < cm.classification.size(); k++) {
 			cm.categoryPaths.add("");
