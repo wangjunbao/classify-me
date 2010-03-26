@@ -34,7 +34,8 @@ EXAMPLE: java searchme.util.SearchMe yahoo.com 0.25 100 "Iu5udbvV34Fcg3uDwfJMTEY
 d) A clear description of the internal design of your project, for each part of the project
 
 The program has four classes. ClassifyMe is the main functional class. 
-It contains both the web database classification and metasearching over web database (and building content summaries).
+It contains both the web database classification and metasearching over web 
+database (and building content summaries).
 We have created a class Category which represents a given Category.
 The last two classes we have built are:
 - SearchResult which represents a particular page result returned by Yahoo.
@@ -42,7 +43,13 @@ The last two classes we have built are:
 
 Part 1: Web Database Classification
 
-In order to classify web database we first built the 2-level categorization scheme (the category hierarchy). We then implement the query probing algorithm described in Figure 4 of the QProber paper without the confusion matrix. The function which implements this is called "classify", and internally it uses function "probe" in order to probe the database with a particular query. As required by the project we take all queries for probing from file named as the category name.
+In order to classify web database we first built the 2-level categorization 
+scheme (the category hierarchy). We then implement the query probing algorithm 
+described in Figure 4 of the QProber paper without the confusion matrix. 
+The function which implements this is called "classify", and internally it 
+uses function "probe" in order to probe the database with a particular query. 
+As required by the project we take all queries for probing from file named as 
+the category name.
 We update the coverage and specificity for the subcategories of category c as follows:
 
 coverage(subcategory i of c) = sum of all hits when probing with quiries for subcategory i
@@ -51,23 +58,27 @@ specificity(subcategory i of c) = (specificity(c)) * (coverage(subcategory i of 
 
 This is exactly as desribed in def. 3.2 and 3.3 in the QProber paper.
 
-Then in the main function we call classify with parameter root (which has specificity 1.0). Thus, we start our classification procedure from the top.
+Then in the main function we call classify with parameter root (which has specificity 1.0). 
+Thus, we start our classification procedure from the top.
 
 Part 2: Metasearching over Web Databases
 
 For implement part 2, we first store all the top 4 search result urls for  
-each query for each category in a hashtable which will help us to eliminate 
-duplicated urls. 
-Then Once we have the database classification, we go through each category node. 
-For each node, we use loop to iterate all the query for such category node to 
-find sample urls.
+each query(stored as hashtable<String> named queries) of each category in 
+a hashtable(named samples) which will help us to eliminate duplicated urls 
+returned from each query. 
+Then Once we have the database classification from part 1, we go through 
+each category node use recursive call of function extractSummary(). 
+For each node, we use iterator of key set of hashtable to iterate all the urls 
+samples(Category.samples) for such category node.
 Then we call the GetWordLynx which will call lynx to crawl on the web return 
-all the non duplicated words for each document of every url stored in the 
-sample structure.
+all the non duplicated words(We changed the GetWordLynx class. We use hashtable 
+to store the word set instead of TreeSet) for each document of every url stored 
+in the sample structure.
 Once we get the words back, we will use hashtable to make word frequency statistic
-and put each new word in a TreeSet structure which can help us to sort words 
-in alphabetical order. Then we will get iterator of such TreeSet and output each word
-count to certain file in alphabetical order.
+and put each new word(unhashed word) in a TreeSet structure which can help us to 
+sort words in alphabetical order. Then we will get iterator of such TreeSet 
+and output each word count to certain file in alphabetical order.
 
 e) Your Yahoo! Search BOSS Application ID
 
