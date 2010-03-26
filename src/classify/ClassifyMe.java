@@ -152,6 +152,7 @@ public class ClassifyMe {
 						sum.put(tempWord, innerTempValue);
 					} else {
 						sum.put(tempWord, 1);
+//						System.out.println(tempWord);
 						keys.add(tempWord);
 
 					}
@@ -170,7 +171,12 @@ public class ClassifyMe {
 			iterator = keys.iterator();
 			while (iterator.hasNext()) {
 				tempWord = iterator.next();
-				file.println(tempWord + " # " + sum.get(tempWord));
+///*
+				System.out.println("Writing to file " + c.name + "-"
+						+ databaseURL + ".txt : " + tempWord + " : "
+						+ sum.get(tempWord));
+//*/
+				file.println(tempWord + " : " + sum.get(tempWord));
 			}
 			output.close();
 		} catch (FileNotFoundException e) {
@@ -288,8 +294,8 @@ public class ClassifyMe {
 		String urlQuery = query.replaceAll(" ", "%20");
 		URL url;
 		try {
-			url = new URL("http://boss.yahooapis.com/ysearch/web/v1/'"
-					+ urlQuery + "'?appid=" + appId + "&format=xml&sites="
+			url = new URL("http://boss.yahooapis.com/ysearch/web/v1/"
+					+ urlQuery + "?appid=" + appId + "&format=xml&sites="
 					+ databaseURL);
 			System.out.println(url);
 			URLConnection con = url.openConnection();
@@ -337,12 +343,10 @@ public class ClassifyMe {
 			count = Integer.parseInt(node.getTextContent());
 
 			// write down the number of matches found for this query
-			File f = new File(databaseURL + '/' + query + ".txt");
+			File f = new File("cache/" + databaseURL + '/' + query + ".txt");
 			if (f.exists()) {
-				System.out
-						.println("Query probe file already exists. Checking if the count is the same...");
-				BufferedReader input = new BufferedReader(new FileReader(
-						databaseURL + '/' + query + ".txt"));
+				System.out.println("Query probe file already exists. Checking if the count is the same...");
+				BufferedReader input = new BufferedReader(new FileReader("cache/" + databaseURL + '/' + query + ".txt"));
 				String line;
 				if ((line = input.readLine()) != null
 						&& Integer.parseInt(line) == count) {
@@ -357,11 +361,13 @@ public class ClassifyMe {
 				input.close();
 			} else {
 				FileOutputStream output;
-				f = new File(databaseURL);
-				if (!f.exists())
+				f = new File("cache/");
+				if (!f.exists()) {
 					f.mkdir();
-				output = new FileOutputStream(databaseURL + '/' + query
-						+ ".txt");
+					f = new File("cache/" + databaseURL);
+					f.mkdir();
+				}
+				output = new FileOutputStream("cache/" + databaseURL + '/' + query + ".txt");
 				PrintStream file = new PrintStream(output);
 				file.println(count);
 				output.close();
@@ -396,8 +402,16 @@ public class ClassifyMe {
 					.println("Usage: ClassifyMe <database-url> <specificity> <coverage> <yahoo appId>");
 			System.exit(1);
 		}
+		
 		ClassifyMe cm = new ClassifyMe();
 		cm.databaseURL = args[0];
+		File f = new File("cache/" + cm.databaseURL);
+		if (f.exists()) { 
+			File[] files = f.listFiles(); 
+			for (int i=0; i<files.length; i++) {
+				files[i].delete();
+			}
+		}
 		cm.specificity = Double.parseDouble(args[1]);
 		cm.coverage = Integer.parseInt(args[2]);
 		cm.classification = cm.classify(cm.root);

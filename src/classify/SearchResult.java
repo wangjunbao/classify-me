@@ -19,6 +19,7 @@ public class SearchResult {
 		this.size = Long.parseLong(size);
 		this.title = title;
 		this.url = url;
+
 		System.out.println("abstract:" + abstractTxt);
 		System.out.println("clickurl:" + clickurl);
 		System.out.println("date:" + date);
