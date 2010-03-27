@@ -1,6 +1,8 @@
 package classify;
 
 import java.util.Hashtable;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 
 public class Category {
@@ -11,7 +13,11 @@ public class Category {
 	public Vector<Category> subcategories;
 	public Vector<String> queries = new Vector<String>();
 	public Hashtable<String, Integer> samples = new Hashtable<String, Integer>();
-	public boolean extractedSummary;
+	public boolean needToExtractSummary; // do we need to extract summary for this category
+	public boolean extractedSummary; // do we need to extract summary for this category
+	// the samples of these categories will be used to build summary for this Category
+	// if such summary is built at all
+	public Set<Category> subclassCategories; 
 
 	/**
 	 * class init function: set its specificity and coverage both to 0
@@ -21,7 +27,10 @@ public class Category {
 		specificity = 0;
 		coverage = 0;
 		parent = null;
+		needToExtractSummary = false;
 		extractedSummary = false;
+		subclassCategories = new HashSet<Category>(); 
+		subclassCategories.add(this);
 	}
 
 	/**
