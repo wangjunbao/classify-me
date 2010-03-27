@@ -2,6 +2,7 @@ package classify;
 
 import java.io.*;
 import java.net.*;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
@@ -34,6 +35,7 @@ public class ClassifyMe {
 		root.name = "Root";
 		root.specificity = 1;
 		root.subcategories = new Vector<Category>();
+		root.parent = null;
 
 		Category hardware = new Category();
 		hardware.name = "Hardware";
@@ -116,9 +118,131 @@ public class ClassifyMe {
 		// to get the full path
 		if (c.parent != null) {
 			getCategoryPath(c.parent, i);
+//			if (c.subcategories != null) { // delete this line if it works without it
+				if (c.parent.subclassCategories == null) 
+					c.parent.subclassCategories = new HashSet<Category>();
+				c.parent.subclassCategories.add(c);
+				c.parent.needToExtractSummary = true;
+				System.out.println("Adding " + c.name + " to " + c.parent.name);
+//			}
 			categoryPaths.set(i, categoryPaths.get(i) + '/');
 		}
 		categoryPaths.set(i, categoryPaths.get(i) + c.name);
+	}
+	
+/*	
+	// this method populates the subclassCategories field in Categories along the classification paths
+	private void prepareBeforeExtraction() {
+		for (int k = 0; k < classification.size(); k++) {
+			populateSubclassCategories(classification.elementAt(k));
+//			System.out.println("Populating from Category: " + classification.elementAt(k).name);
+		}		
+	}
+	
+	private void populateSubclassCategories(Category c) {
+		// if this is not the root we can populate up the classification tree
+		if (c.parent != null ) {
+			if (c.parent.subclassCategories != null) {
+//				if (!c.parent.subclassCategories.contains(c)) {
+				    // if an object is in the set 'adding' it does not change anything
+					c.parent.subclassCategories.add(c);
+					System.out.println("Adding " + c.name + " to " + c.parent.name);
+//				}				
+			} else {
+				c.parent.subclassCategories = new HashSet<Category>();
+				c.parent.subclassCategories.add(c);
+				System.out.println("Adding " + c.name + " to " + c.parent.name);
+			}
+			c.parent.needToExtractSummary = true;
+		}
+	}
+*/
+	private void extractAllSummaries(Category c) {
+		compoundExtractSummary(c);
+		if (c.subcategories != null) {
+			for(int k = 0; k < c.subcategories.size(); k++) {
+				extractAllSummaries(c.subcategories.elementAt(k));
+			}
+		}
+	}
+
+	/**
+	 * This function will extract summary for given database for category if we need to extract summary
+	 * (the samples will be combined from the populated subclassCategories)
+	 * @param c
+	 *            current category node
+	 */
+	private void compoundExtractSummary(Category cat) {
+		if (cat.needToExtractSummary) {
+			System.out.println("Building summary for category:" + cat.name);
+			Hashtable<String, Integer> catSamples = new Hashtable<String, Integer>();			
+			Hashtable<String, Integer> sum = new Hashtable<String, Integer>();
+			// temporary set to store the string set returned from the lynx
+			// function
+			Set<String> tempWords;
+			String tempWord;
+			Integer innerTempValue;
+			String tempUrl;
+			Iterator<String> innerIterator;
+			// use tree set to sort words in alphabetical order
+			Set<String> keys = new TreeSet<String>();
+			Category c;
+			
+			for (Iterator<Category> iter = cat.subclassCategories.iterator(); iter.hasNext(); ) {
+				c = iter.next();
+				// get sample urls of current category node
+				Iterator<String> iterator = c.samples.keySet().iterator();
+				while (iterator.hasNext()) {
+					tempUrl = (String) (iterator.next());
+					// make sure no duplicated url from different queries
+					if (!catSamples.containsKey(tempUrl)) {
+						catSamples.put(tempUrl, 1);
+						System.out.println("Getting Page : " + tempUrl + "\n\n");
+						tempWords = GetWordsLynx.runLynx(tempUrl);
+						innerIterator = tempWords.iterator();
+						// Calculate document frequency for each word
+						while (innerIterator.hasNext()) {
+							tempWord = innerIterator.next();
+							if (sum.containsKey(tempWord)) {
+								innerTempValue = (Integer) sum.get(tempWord);
+								innerTempValue = innerTempValue + 1;
+								sum.put(tempWord, innerTempValue);
+							} else {
+								sum.put(tempWord, 1);
+								keys.add(tempWord);
+							}
+						}
+					}
+				}				
+			}
+			// print the words statistic data to file
+			FileOutputStream output;
+			try {
+				File f = new File(cat.name + "-" + databaseURL + ".txt");
+				if (f.exists())
+					f.delete();
+				output = new FileOutputStream(cat.name + "-" + databaseURL
+						+ ".txt");
+				PrintStream file = new PrintStream(output);
+				System.out.println("Category: " + cat.name + ", Keys size : "
+						+ keys.size());
+				Iterator<String> iterator = keys.iterator();
+				while (iterator.hasNext()) {
+					tempWord = iterator.next();
+					file.println(tempWord + "#" + sum.get(tempWord));
+				}
+				output.close();
+				System.out.println("Writing summary to file: " + cat.name + "-"
+						+ databaseURL + ".txt");
+				cat.extractedSummary = true;
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/**
@@ -402,7 +526,10 @@ public class ClassifyMe {
 				file.println(count);
 				output.close();
 			}
-			FileOutputStream output = new FileOutputStream("cache/sample-"+c.name + "-" +databaseURL +"/" + query
+			f = new File("sample-" + c.name + "-" + databaseURL);
+			if (!f.exists())
+				f.mkdir();
+			FileOutputStream output = new FileOutputStream("sample-" + c.name + "-" + databaseURL +"/" + query
 					+ "_urls.txt");
 			nodeL = doc.getElementsByTagName("result");
 			PrintStream file = new PrintStream(output);
@@ -429,14 +556,44 @@ public class ClassifyMe {
 		}
 		return c;
 	}
+	
+	private void showme(Category c) {
+	    System.out.println(c.name + ", ");
+	    if (c.subclassCategories != null) {
+	    	for (Iterator<Category> iter = c.subclassCategories.iterator(); iter.hasNext(); ) {
+			    String name = iter.next().name;
+			    System.out.print(name + "#");
+			}
+	    }
+	    if (c.subcategories == null) return;
+		for (int k = 0; k < c.subcategories.size(); k++) {
+			showme(c.subcategories.elementAt(k));
+		}
+	}
+	
+
+	private void showSummaryCategories(Category c) {
+		if (c.subclassCategories != null) {
+			for (Iterator<Category> iter = c.subclassCategories.iterator(); iter.hasNext(); ) {
+			    String name = iter.next().name;
+			    System.out.println(name + " ");
+			}
+		}
+		// if this is leaf category we are done
+		if (c.subcategories == null) return;
+		for (int k = 0; k < c.subcategories.size(); k++) {
+			showSummaryCategories(c.subcategories.elementAt(k));
+		}
+	}
 
 	public static void main(String args[]) {
+	
 		if (args.length != 3) {
 			System.out
 					.println("Usage: ClassifyMe <database-url> <specificity> <coverage> <yahoo appId>");
 			System.exit(1);
 		}
-		ClassifyMe cm = new ClassifyMe();
+		ClassifyMe cm = new ClassifyMe();		
 		cm.databaseURL = args[0];
 		File f = new File("cache/" + cm.databaseURL);
 		if (f.exists()) {
@@ -453,13 +610,23 @@ public class ClassifyMe {
 		for (int k = 0; k < cm.classification.size(); k++) {
 			cm.categoryPaths.add("");
 			cm.getCategoryPath(cm.classification.elementAt(k), k);
+			// if there are children categories to the classification cat c include them in the subclassCat of this cat c
+			// so we use their samples when extracting summaries
+			if (cm.classification.elementAt(k).subcategories != null) {
+				cm.classification.elementAt(k).subclassCategories.addAll(cm.classification.elementAt(k).subcategories);
+			}
 		}
 
 		System.out.println("\n\nClassification: " + cm.getClassificationPaths()
 				+ "\n\n");
-
+		
+//		cm.prepareBeforeExtraction();		
+//		cm.showme(cm.root);
+		cm.extractAllSummaries(cm.root);
+/*
 		for (int k = 0; k < cm.classification.size(); k++) {
-			cm.extractSummary(cm.classification.elementAt(k));
+			cm.compoundExtractSummary(cm.classification.elementAt(k));
 		}
+*/
 	}
 }
