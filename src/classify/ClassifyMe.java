@@ -599,6 +599,7 @@ public class ClassifyMe {
 			// if there are children categories to the classification cat c include them in the subclassCat of this cat c
 			// so we use their samples when extracting summaries
 			if (cm.classification.elementAt(k).subcategories != null) {
+				cm.classification.elementAt(k).needToExtractSummary = true;
 				cm.classification.elementAt(k).subclassCategories.addAll(cm.classification.elementAt(k).subcategories);
 			}
 		}
