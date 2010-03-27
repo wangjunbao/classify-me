@@ -570,21 +570,7 @@ public class ClassifyMe {
 			showme(c.subcategories.elementAt(k));
 		}
 	}
-	
 
-	private void showSummaryCategories(Category c) {
-		if (c.subclassCategories != null) {
-			for (Iterator<Category> iter = c.subclassCategories.iterator(); iter.hasNext(); ) {
-			    String name = iter.next().name;
-			    System.out.println(name + " ");
-			}
-		}
-		// if this is leaf category we are done
-		if (c.subcategories == null) return;
-		for (int k = 0; k < c.subcategories.size(); k++) {
-			showSummaryCategories(c.subcategories.elementAt(k));
-		}
-	}
 
 	public static void main(String args[]) {
 	
