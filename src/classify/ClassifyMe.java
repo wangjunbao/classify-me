@@ -243,10 +243,10 @@ public class ClassifyMe {
 				int index;
 				String subcatName;
 				String probingQuery;
-				File dir = new File(c.name + "/");
+				File dir = new File("cache/sample-"+c.name + "-" +databaseURL +"/");
 				if (dir.exists())
 					dir.delete();
-				new File(c.name).mkdir();
+				new File("cache/sample-"+c.name + "-" +databaseURL).mkdir();
 				while ((line = input.readLine()) != null) {
 					index = line.indexOf((int) ' ');
 					if (index < 0) {
@@ -402,7 +402,7 @@ public class ClassifyMe {
 				file.println(count);
 				output.close();
 			}
-			FileOutputStream output = new FileOutputStream(c.name + "/" + query
+			FileOutputStream output = new FileOutputStream("cache/sample-"+c.name + "-" +databaseURL +"/" + query
 					+ "_urls.txt");
 			nodeL = doc.getElementsByTagName("result");
 			PrintStream file = new PrintStream(output);
