@@ -243,6 +243,10 @@ public class ClassifyMe {
 				int index;
 				String subcatName;
 				String probingQuery;
+				File dir = new File(c.name + "/");
+				if (dir.exists())
+					dir.delete();
+				new File(c.name).mkdir();
 				while ((line = input.readLine()) != null) {
 					index = line.indexOf((int) ' ');
 					if (index < 0) {
@@ -387,6 +391,10 @@ public class ClassifyMe {
 					f.mkdir();
 					f = new File("cache/" + databaseURL);
 					f.mkdir();
+				} else {
+					f = new File("cache/" + databaseURL);
+					if (!f.exists())
+						f.mkdir();
 				}
 				output = new FileOutputStream("cache/" + databaseURL + '/'
 						+ query + ".txt");
@@ -394,17 +402,21 @@ public class ClassifyMe {
 				file.println(count);
 				output.close();
 			}
-
+			FileOutputStream output = new FileOutputStream(c.name + "/" + query
+					+ "_urls.txt");
 			nodeL = doc.getElementsByTagName("result");
+			PrintStream file = new PrintStream(output);
 			for (int i = 0; i < sampleSize; i++) {
 				node = nodeL.item(i);
 				if (node != null) {
 					sr = new SearchResult(node);
+					file.println(sr.url);
 					if (!c.samples.containsKey(sr.url))
 						c.samples.put(sr.url, 1);
 
 				}
 			}
+			output.close();
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -443,7 +455,8 @@ public class ClassifyMe {
 			cm.getCategoryPath(cm.classification.elementAt(k), k);
 		}
 
-		System.out.println("Classification: " + cm.getClassificationPaths());
+		System.out.println("\n\nClassification: " + cm.getClassificationPaths()
+				+ "\n\n");
 
 		for (int k = 0; k < cm.classification.size(); k++) {
 			cm.extractSummary(cm.classification.elementAt(k));
